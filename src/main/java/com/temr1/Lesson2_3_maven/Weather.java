@@ -16,21 +16,14 @@ public class Weather {
     ArrayList<WeatherEditor> weatherEditors = new ArrayList<>();
     ArrayList<String> temps = new ArrayList<>();
 
-    public void getWeather(String url){
+    public ArrayList<WeatherEditor> getWeather(String url){
+        weatherEditors.clear();
         try {
 
             Document document = Jsoup.connect(url).get();
             Elements links = document.select("tr");
 
-            int repeats;
-            boolean isTwoTemps = false;
-
-            if (Objects.requireNonNull(links.first()).childrenSize() == 8){
-                isTwoTemps = true;
-                repeats = 8;
-            }
-            else
-                repeats = 4;
+            int repeats = Objects.requireNonNull(links.first()).select("td").size();
 
             System.out.println("--------------------------------------------------");
 
@@ -41,7 +34,7 @@ public class Weather {
                     if (listOfDayTime.contains(link.child(index).text()))
                         time = link.child(index).text();
                     else if (link.className().equals("temperature")) {
-                        if (isTwoTemps){
+                        if (repeats == 8){
                             temps.add(link.child(index * 2).text());
                             temps.add(link.child(index * 2 + 1).text());
                         }
@@ -54,13 +47,12 @@ public class Weather {
                 weatherEditor = new WeatherEditor(time,temps);
                 weatherEditors.add(weatherEditor);
                 temps.clear();
-
-                System.out.println(weatherEditor.getTime());
-                System.out.println(weatherEditor.getAverageTemp());
             }
 
         } catch (IOException e) {
             System.out.println("Виникли якісь проблеми!");
         }
+
+        return weatherEditors;
     }
 }

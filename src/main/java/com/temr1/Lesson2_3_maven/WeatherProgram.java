@@ -3,11 +3,14 @@ package com.temr1.Lesson2_3_maven;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 
 public class WeatherProgram extends JFrame implements ActionListener {
     private final WeatherSchedule weatherSchedule;
     private final Weather weather;
-    private final JTextArea textArea = new JTextArea();;
+    private ArrayList<WeatherEditor> weatherEditors;
+    private final JTextArea textArea = new JTextArea();
+    private String url;
 
     public WeatherProgram(){
         weatherSchedule = new WeatherSchedule();
@@ -32,16 +35,19 @@ public class WeatherProgram extends JFrame implements ActionListener {
 
         switch (command){
             case "Today":
-                String todayUrl = weatherSchedule.getURLOfTodayWeather();
-                weather.getWeather(todayUrl);
+                url = weatherSchedule.getURLOfTodayWeather();
+                textArea.setText("Температура на сьогодні: ");
+                setTextToTextArea(weather.getWeather(url));
                 break;
             case "Tomorrow":
-                String tomorrowUrl = weatherSchedule.getURLOfTomorrowWeather();
-                weather.getWeather(tomorrowUrl);
+                url = weatherSchedule.getURLOfTomorrowWeather();
+                textArea.setText("Температура на завтра: ");
+                setTextToTextArea(weather.getWeather(url));
                 break;
             case "After tomorrow":
-                String afterTomorrowUrl = weatherSchedule.getURLOfAfterTomorrowWeather();
-                weather.getWeather(afterTomorrowUrl);
+                url = weatherSchedule.getURLOfAfterTomorrowWeather();
+                textArea.setText("Температура на після завтра: ");
+                setTextToTextArea(weather.getWeather(url));
                 break;
             case "C":
                 textArea.setText("");
@@ -63,8 +69,10 @@ public class WeatherProgram extends JFrame implements ActionListener {
         add(button);
     }
 
-    public void setNewTextToTextArea(String time, int averageTemp){
-        String text = textArea.getText();
-        textArea.setText(text + "\nЧас: " + time + ". Середня температура: " + averageTemp);
+    private void setTextToTextArea(ArrayList<WeatherEditor> weatherEditors){
+        for(WeatherEditor weatherEditor : weatherEditors){
+            String text = textArea.getText();
+            textArea.setText(text + "\n Час: " + weatherEditor.getTime() + ". Температура: " + weatherEditor.getAverageTemp());
+        }
     }
 }
