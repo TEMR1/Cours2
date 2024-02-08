@@ -1,23 +1,66 @@
 package com.temr1.Lesson2_3_maven;
 
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+
 public class Weather {
-    private final String time;
-    private final int averageTemp;
-    public Weather(String time, String temp1, String temp2){
-        char firstChar = Character.toUpperCase(time.charAt(0));
-        this.time = firstChar + time.substring(1);
+    List<String> listOfDayTime = List.of("ніч", "ранок", "день", "вечір");
+    WeatherEditor weatherEditor;
+    ArrayList<WeatherEditor> weatherEditors = new ArrayList<>();
+    ArrayList<String> temps = new ArrayList<>();
 
-        String numberOfTemp1 = temp1.substring(1,temp1.length() - 1);
-        String numberOfTemp2 = temp2.substring(1,temp2.length() - 1);
+    public void getWeather(String url){
+        try {
 
-        averageTemp = (Integer.parseInt(numberOfTemp1) + Integer.parseInt(numberOfTemp2)) / 2;
-    }
+            Document document = Jsoup.connect(url).get();
+            Elements links = document.select("tr");
 
-    public String getTime() {
-        return time;
-    }
+            int repeats;
+            boolean isTwoTemps = false;
 
-    public int getAverageTemp() {
-        return averageTemp;
+            if (Objects.requireNonNull(links.first()).childrenSize() == 8){
+                isTwoTemps = true;
+                repeats = 8;
+            }
+            else
+                repeats = 4;
+
+            System.out.println("--------------------------------------------------");
+
+            for (int index = 0; index < repeats; index++) {
+                String time = "Немає відомості";
+
+                for(Element link : links){
+                    if (listOfDayTime.contains(link.child(index).text()))
+                        time = link.child(index).text();
+                    else if (link.className().equals("temperature")) {
+                        if (isTwoTemps){
+                            temps.add(link.child(index * 2).text());
+                            temps.add(link.child(index * 2 + 1).text());
+                        }
+                        else{
+                            temps.add(link.child(index).text());
+                        }
+                    }
+                }
+
+                weatherEditor = new WeatherEditor(time,temps);
+                weatherEditors.add(weatherEditor);
+                temps.clear();
+
+                System.out.println(weatherEditor.getTime());
+                System.out.println(weatherEditor.getAverageTemp());
+            }
+
+        } catch (IOException e) {
+            System.out.println("Виникли якісь проблеми!");
+        }
     }
 }
