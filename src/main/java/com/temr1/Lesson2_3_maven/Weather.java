@@ -23,9 +23,18 @@ public class Weather {
             Document document = Jsoup.connect(url).get();
             Elements links = document.select("tr");
 
-            int repeats = Objects.requireNonNull(links.first()).select("td").size();
+            int repeats = 0;
+            boolean isTwoTemps = false;
 
-            System.out.println("--------------------------------------------------");
+            for(Element elem : links){
+                if (listOfDayTime.contains(elem.child(0).text()))
+                    repeats = Objects.requireNonNull(elem).select("td").size();
+                else if (elem.className().equals("temperature")){
+                    if (elem.select("td").size() == 8){
+                        isTwoTemps = true;
+                    }
+                }
+            }
 
             for (int index = 0; index < repeats; index++) {
                 String time = "Немає відомості";
@@ -34,7 +43,7 @@ public class Weather {
                     if (listOfDayTime.contains(link.child(index).text()))
                         time = link.child(index).text();
                     else if (link.className().equals("temperature")) {
-                        if (repeats == 8){
+                        if (isTwoTemps){
                             temps.add(link.child(index * 2).text());
                             temps.add(link.child(index * 2 + 1).text());
                         }
