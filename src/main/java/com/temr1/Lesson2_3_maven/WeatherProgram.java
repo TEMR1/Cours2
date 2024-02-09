@@ -8,7 +8,6 @@ import java.util.ArrayList;
 public class WeatherProgram extends JFrame implements ActionListener {
     private final WeatherSchedule weatherSchedule;
     private final Weather weather;
-    private ArrayList<WeatherEditor> weatherEditors;
     private final JTextArea textArea = new JTextArea();
     private String url;
 
