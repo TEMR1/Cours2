@@ -6,22 +6,29 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 public class Weather {
-    String url = "https://ua.sinoptik.ua/";
-    List<String> listOfDayTime = List.of("ніч", "ранок", "день", "вечір");
-    String temp1 = "Немає відомості";
-    String temp2 = "Немає відомості";
-    String dayTime = "Немає відомості";
+    private final Module module;
+    private final List<String> listOfDayTime = List.of("ніч", "ранок", "день", "вечір");
+    private String temp1 = "Немає відомості";
+    private String temp2 = "Немає відомості";
+    private String dayTime = "Немає відомості";
 
-    public void getWeather(){
+    public Weather(Module module){
+        this.module = module;
+    }
+
+    public ArrayList<WeatherEditor> getWeather(String city){
+        ArrayList<WeatherEditor> weatherEditors = new ArrayList<>();
+
+        String baseUrl = "https://ua.sinoptik.ua/%D0%BF%D0%BE%D0%B3%D0%BE%D0%B4%D0%B0-";
+        String url = baseUrl + city;
         try {
             Document document = Jsoup.connect(url).get();
             Elements links = document.select("tr");
-
-            System.out.println("Погода на сьогодні: ");
 
             for (int index = 0; index < Objects.requireNonNull(links.first()).childrenSize(); index++) {
                 for(Element link : links){
@@ -34,12 +41,16 @@ public class Weather {
                     }
                 }
 
-//                Weather weather = new Weather(dayTime,temp1,temp2);
-//                System.out.println("Час: " + weather.getTime() + ". Середня температура: " + weather.getAverageTemp());
+                WeatherEditor weatherEditor = new WeatherEditor(dayTime,temp1,temp2);
+                weatherEditors.add(weatherEditor);
             }
+            module.setCityIsFind(true);
 
         } catch (IOException e) {
             System.out.println("You have some problems!");
+            return null;
         }
+
+        return weatherEditors;
     }
 }

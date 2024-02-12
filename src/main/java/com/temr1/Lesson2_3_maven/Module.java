@@ -12,17 +12,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Module extends TelegramLongPollingBot {
-    String token = "6102260601:AAGSjf9UIsQCIlJ5b0KwTMO05VzsBKpjZWI";
-    String userName = "https://t.me/MyGlobalWeatherByCityBot";
+    SendMessage sendMessage = new SendMessage();
+    private final Weather weather = new Weather(this);
+    private boolean isFindingWeather = false;
+    private boolean cityIsFind = false;
 
     public Module(){
         ArrayList<BotCommand> commandsList = new ArrayList<>();
-        commandsList.add(new BotCommand("/weather", "Показывает погоду в указанном городе"));
+        commandsList.add(new BotCommand("/weather", "Показує погоду в вказаному місті"));
 
         try{
             this.execute(new SetMyCommands(commandsList, new BotCommandScopeDefault(), null));
         }catch (TelegramApiException e){
-            System.out.println("Error with executing commands menu: "+e);
+            System.out.println("Error with executing commands menu: " + e);
         }
     }
 
@@ -31,27 +33,60 @@ public class Module extends TelegramLongPollingBot {
         String userMessageText = update.getMessage().getText();
         long chatId = update.getMessage().getChatId();
 
-        SendMessage sendMessage = new SendMessage();
-        sendMessage.setChatId(chatId);
-        sendMessage.setText("Вы написали: " + userMessageText);
+        if (isFindingWeather) {
+            ArrayList<WeatherEditor> weatherEditors = weather.getWeather(userMessageText);
 
-        try {
-            execute(sendMessage);
-        } catch (TelegramApiException e) {
-            e.printStackTrace();
+            if (cityIsFind && weatherEditors != null){
+                StringBuilder stringBuilder = new StringBuilder();
+
+                for(WeatherEditor weatherEditor : weatherEditors)
+                    stringBuilder.append("Час: ").append(weatherEditor.getTime()).append(". Середня температура: ").append(weatherEditor.getAverageTemp()).append("\n");
+
+                sendMessage.setChatId(chatId);
+                sendMessage.setText(stringBuilder.toString());
+
+                try {
+                    execute(sendMessage);
+                } catch (TelegramApiException e) {
+                    System.out.println("Помилка в надсиланні данних!");
+                }
+            }
+            else{
+                sendMessage.setChatId(chatId);
+                sendMessage.setText("Виникли деякі проблеми!");
+
+                try {
+                    execute(sendMessage);
+                } catch (TelegramApiException e) {
+                    System.out.println("Виниколи проблеми!");
+                }
+
+            }
+            isFindingWeather = false;
+        }
+
+        if (userMessageText.equals("/weather")) {
+            sendMessage.setChatId(chatId);
+            sendMessage.setText("Вкажіть місто для пошуку погоди!");
+
+            try {
+                execute(sendMessage);
+            } catch (TelegramApiException e) {
+                System.out.println("Помилка в надсиланні данних!");
+            }
+
+            isFindingWeather = true;
         }
     }
 
     @Override
     public String getBotUsername() {
-        // Уникальное имя вашего бота
-        return userName;
+        return "https://t.me/MyGlobalWeatherByCityBot";
     }
 
     @Override
     public String getBotToken() {
-        // Токен вашего бота, полученный от BotFather в Telegram
-        return token;
+        return "6102260601:AAGSjf9UIsQCIlJ5b0KwTMO05VzsBKpjZWI";
     }
 
     @Override
@@ -59,9 +94,13 @@ public class Module extends TelegramLongPollingBot {
         super.onRegister();
     }
 
-
     @Override
     public void onUpdatesReceived(List<Update> updates) {
         super.onUpdatesReceived(updates);
+    }
+
+//------------------------------------------GETTERS AND SETTERS--------------------------------------------
+    public void setCityIsFind(boolean cityIsFind) {
+        this.cityIsFind = cityIsFind;
     }
 }
