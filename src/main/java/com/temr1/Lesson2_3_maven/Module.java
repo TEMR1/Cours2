@@ -19,7 +19,8 @@ public class Module extends TelegramLongPollingBot {
 
     public Module(){
         ArrayList<BotCommand> commandsList = new ArrayList<>();
-        commandsList.add(new BotCommand("/weather", "Показує погоду в вказаному місті"));
+        commandsList.add(new BotCommand("/weather", "Показує погоду в вказаному місті!"));
+        commandsList.add(new BotCommand("/history", "Показує історію запитів!"));
 
         try{
             this.execute(new SetMyCommands(commandsList, new BotCommandScopeDefault(), null));
@@ -33,7 +34,20 @@ public class Module extends TelegramLongPollingBot {
         String userMessageText = update.getMessage().getText();
         long chatId = update.getMessage().getChatId();
 
-        if (isFindingWeather) {
+        if (userMessageText.equals("/weather")) {
+            sendMessage.setChatId(chatId);
+            sendMessage.setText("Вкажіть місто для пошуку погоди!");
+
+            try {
+                execute(sendMessage);
+            } catch (TelegramApiException e) {
+                System.out.println("Помилка в надсиланні данних!");
+            }
+
+            isFindingWeather = true;
+        }
+
+        else if (isFindingWeather) {
             ArrayList<WeatherEditor> weatherEditors = weather.getWeather(userMessageText);
 
             if (cityIsFind && weatherEditors != null){
@@ -44,6 +58,8 @@ public class Module extends TelegramLongPollingBot {
 
                 sendMessage.setChatId(chatId);
                 sendMessage.setText(stringBuilder.toString());
+
+
 
                 try {
                     execute(sendMessage);
@@ -63,19 +79,6 @@ public class Module extends TelegramLongPollingBot {
 
             }
             isFindingWeather = false;
-        }
-
-        if (userMessageText.equals("/weather")) {
-            sendMessage.setChatId(chatId);
-            sendMessage.setText("Вкажіть місто для пошуку погоди!");
-
-            try {
-                execute(sendMessage);
-            } catch (TelegramApiException e) {
-                System.out.println("Помилка в надсиланні данних!");
-            }
-
-            isFindingWeather = true;
         }
     }
 
