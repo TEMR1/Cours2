@@ -14,9 +14,8 @@ import java.util.List;
 public class Module extends TelegramLongPollingBot {
     SendMessage sendMessage = new SendMessage();
     private final Weather weather = new Weather(this);
+    private final DataBase dataBase = new DataBase();
     private boolean isFindingWeather = false;
-    private boolean cityIsFind = false;
-
     public Module(){
         ArrayList<BotCommand> commandsList = new ArrayList<>();
         commandsList.add(new BotCommand("/weather", "Показує погоду в вказаному місті!"));
@@ -34,35 +33,67 @@ public class Module extends TelegramLongPollingBot {
         String userMessageText = update.getMessage().getText();
         long chatId = update.getMessage().getChatId();
 
-        if (userMessageText.equals("/weather")) {
-            sendMessage.setChatId(chatId);
-            sendMessage.setText("Вкажіть місто для пошуку погоди!");
+        if (userMessageText.charAt(0) == '/' && !isFindingWeather) {
+            switch(userMessageText){
+                case "/weather":
+                    sendMessage.setChatId(chatId);
+                    sendMessage.setText("Вкажіть місто для пошуку погоди!");
 
-            try {
-                execute(sendMessage);
-            } catch (TelegramApiException e) {
-                System.out.println("Помилка в надсиланні данних!");
+                    try {
+                        execute(sendMessage);
+                    } catch (TelegramApiException e) {
+                        System.out.println("Помилка в надсиланні данних!");
+                    }
+
+                    isFindingWeather = true;
+                    break;
+                case "/history":
+                    ArrayList<String> historyArray = dataBase.readFromDataBase();
+
+                    if (historyArray != null){
+                        StringBuilder stringBuilder = new StringBuilder();
+
+                        for (String element : historyArray){
+                            stringBuilder.append("Місто: ").append(element);
+
+                            if(historyArray.indexOf(element) < historyArray.size())
+                                stringBuilder.append("Погода: ").append(historyArray.get(historyArray.indexOf(element) + 1));
+                            else
+                                return;
+                        }
+                        sendMessage.setChatId(chatId);
+                        sendMessage.setText(stringBuilder.toString());
+                    }
+                    else{
+                        sendMessage.setChatId(chatId);
+                        sendMessage.setText("Вибачте, але на данний момент нічого ще не збережено!");
+                    }
+
+                    try {
+                        execute(sendMessage);
+                    } catch (TelegramApiException e) {
+                        System.out.println("Помилка в надсиланні данних!");
+                    }
+
+                    break;
             }
-
-            isFindingWeather = true;
         }
 
         else if (isFindingWeather) {
-            ArrayList<WeatherEditor> weatherEditors = weather.getWeather(userMessageText);
+            ArrayList<WeatherArguments> weatherArguments = weather.getWeather(userMessageText);
 
-            if (cityIsFind && weatherEditors != null){
+            if (weatherArguments != null) {
                 StringBuilder stringBuilder = new StringBuilder();
 
-                for(WeatherEditor weatherEditor : weatherEditors)
+                for (WeatherArguments weatherEditor : weatherArguments)
                     stringBuilder.append("Час: ").append(weatherEditor.getTime()).append(". Середня температура: ").append(weatherEditor.getAverageTemp()).append("\n");
 
                 sendMessage.setChatId(chatId);
                 sendMessage.setText(stringBuilder.toString());
 
-
-
                 try {
                     execute(sendMessage);
+                    dataBase.saveToDataBase(userMessageText, stringBuilder.toString());
                 } catch (TelegramApiException e) {
                     System.out.println("Помилка в надсиланні данних!");
                 }
@@ -74,10 +105,10 @@ public class Module extends TelegramLongPollingBot {
                 try {
                     execute(sendMessage);
                 } catch (TelegramApiException e) {
-                    System.out.println("Виниколи проблеми!");
+                    System.out.println("Виникли проблеми!");
                 }
-
             }
+
             isFindingWeather = false;
         }
     }
@@ -100,10 +131,5 @@ public class Module extends TelegramLongPollingBot {
     @Override
     public void onUpdatesReceived(List<Update> updates) {
         super.onUpdatesReceived(updates);
-    }
-
-//------------------------------------------GETTERS AND SETTERS--------------------------------------------
-    public void setCityIsFind(boolean cityIsFind) {
-        this.cityIsFind = cityIsFind;
     }
 }

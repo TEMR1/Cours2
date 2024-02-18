@@ -1,9 +1,9 @@
 package com.temr1.Lesson2_3_maven;
 
-public class WeatherEditor {
+public class WeatherArguments {
     private final String time;
     private final int averageTemp;
-    public WeatherEditor(String time, String temp1, String temp2){
+    public WeatherArguments(String time, String temp1, String temp2){
         char firstChar = Character.toUpperCase(time.charAt(0));
         this.time = firstChar + time.substring(1);
 

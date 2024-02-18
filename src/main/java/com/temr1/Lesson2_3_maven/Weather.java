@@ -21,8 +21,8 @@ public class Weather {
         this.module = module;
     }
 
-    public ArrayList<WeatherEditor> getWeather(String city){
-        ArrayList<WeatherEditor> weatherEditors = new ArrayList<>();
+    public ArrayList<WeatherArguments> getWeather(String city){
+        ArrayList<WeatherArguments> weatherEditors = new ArrayList<>();
 
         String baseUrl = "https://ua.sinoptik.ua/%D0%BF%D0%BE%D0%B3%D0%BE%D0%B4%D0%B0-";
         String url = baseUrl + city;
@@ -41,10 +41,9 @@ public class Weather {
                     }
                 }
 
-                WeatherEditor weatherEditor = new WeatherEditor(dayTime,temp1,temp2);
+                WeatherArguments weatherEditor = new WeatherArguments(dayTime,temp1,temp2);
                 weatherEditors.add(weatherEditor);
             }
-            module.setCityIsFind(true);
 
         } catch (IOException e) {
             System.out.println("You have some problems!");
