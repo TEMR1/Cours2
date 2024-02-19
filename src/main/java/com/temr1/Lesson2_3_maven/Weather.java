@@ -22,7 +22,7 @@ public class Weather {
     }
 
     public ArrayList<WeatherArguments> getWeather(String city){
-        ArrayList<WeatherArguments> weatherEditors = new ArrayList<>();
+        ArrayList<WeatherArguments> weatherArguments = new ArrayList<>();
 
         String baseUrl = "https://ua.sinoptik.ua/%D0%BF%D0%BE%D0%B3%D0%BE%D0%B4%D0%B0-";
         String url = baseUrl + city;
@@ -41,8 +41,8 @@ public class Weather {
                     }
                 }
 
-                WeatherArguments weatherEditor = new WeatherArguments(dayTime,temp1,temp2);
-                weatherEditors.add(weatherEditor);
+                WeatherArguments weatherArgument = new WeatherArguments(dayTime,temp1,temp2);
+                weatherArguments.add(weatherArgument);
             }
 
         } catch (IOException e) {
@@ -50,6 +50,6 @@ public class Weather {
             return null;
         }
 
-        return weatherEditors;
+        return weatherArguments;
     }
 }

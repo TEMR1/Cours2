@@ -20,6 +20,7 @@ public class Module extends TelegramLongPollingBot {
         ArrayList<BotCommand> commandsList = new ArrayList<>();
         commandsList.add(new BotCommand("/weather", "Показує погоду в вказаному місті!"));
         commandsList.add(new BotCommand("/history", "Показує історію запитів!"));
+        commandsList.add(new BotCommand("/clear", "Очищує вашу історію запитів!"));
 
         try{
             this.execute(new SetMyCommands(commandsList, new BotCommandScopeDefault(), null));
@@ -48,21 +49,23 @@ public class Module extends TelegramLongPollingBot {
                     isFindingWeather = true;
                     break;
                 case "/history":
-                    ArrayList<String> historyArray = dataBase.readFromDataBase();
+                    ArrayList<HistoryElement> historyArray = dataBase.readFromDataBase();
 
-                    if (historyArray != null){
+                    if (!historyArray.isEmpty()){
                         StringBuilder stringBuilder = new StringBuilder();
 
-                        for (String element : historyArray){
-                            stringBuilder.append("Місто: ").append(element);
-
-                            if(historyArray.indexOf(element) < historyArray.size())
-                                stringBuilder.append("Погода: ").append(historyArray.get(historyArray.indexOf(element) + 1));
-                            else
-                                return;
+                        for (HistoryElement element : historyArray){
+                            stringBuilder.append("\nМісто: ").append(element.getCity());
+                            stringBuilder.append("\nПогода:\n").append(element.getTemp());
                         }
                         sendMessage.setChatId(chatId);
                         sendMessage.setText(stringBuilder.toString());
+
+                        try {
+                            execute(sendMessage);
+                        } catch (TelegramApiException e) {
+                            System.out.println("Помилка в надсиланні данних!");
+                        }
                     }
                     else{
                         sendMessage.setChatId(chatId);
@@ -76,6 +79,10 @@ public class Module extends TelegramLongPollingBot {
                     }
 
                     break;
+
+                case "/clear":
+                    dataBase.clear();
+                    break;
             }
         }
 
@@ -85,8 +92,8 @@ public class Module extends TelegramLongPollingBot {
             if (weatherArguments != null) {
                 StringBuilder stringBuilder = new StringBuilder();
 
-                for (WeatherArguments weatherEditor : weatherArguments)
-                    stringBuilder.append("Час: ").append(weatherEditor.getTime()).append(". Середня температура: ").append(weatherEditor.getAverageTemp()).append("\n");
+                for (WeatherArguments weatherArgument : weatherArguments)
+                    stringBuilder.append("Час: ").append(weatherArgument.getTime()).append(". Середня температура: ").append(weatherArgument.getAverageTemp()).append("\n");
 
                 sendMessage.setChatId(chatId);
                 sendMessage.setText(stringBuilder.toString());

@@ -5,10 +5,11 @@ import java.util.ArrayList;
 
 public class DataBase {
     String url = "jdbc:postgresql://ep-purple-brook-a2aamnh8.eu-central-1.aws.neon.tech/Weather%20Info?user=danylo.shpak.2009&password=HAiU5RrDXIf4&sslmode=require";
+    Connection connection;
 
     public void saveToDataBase(String cityName, String tempInfo){
         try{
-            Connection connection = DriverManager.getConnection(url);
+            connection = DriverManager.getConnection(url);
             connection.createStatement().executeUpdate("CREATE TABLE IF NOT EXISTS weatherTable (id SERIAL PRIMARY KEY, cityName TEXT, tempInfo TEXT)");
 
             PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO weatherTable (cityName, tempInfo) VALUES (?, ?)");
@@ -21,23 +22,31 @@ public class DataBase {
         }
     }
 
-    public ArrayList<String> readFromDataBase(){
-        ArrayList<String> array = new ArrayList<>();
+    public ArrayList<HistoryElement> readFromDataBase(){
+        ArrayList<HistoryElement> historyArray = new ArrayList<>();
         try{
-            Connection connection = DriverManager.getConnection(url);
+            connection = DriverManager.getConnection(url);
             ResultSet rs = connection.createStatement().executeQuery("SELECT * FROM weatherTable");
 
             while (rs.next()){
-                array.add(rs.getString("cityName"));
-                array.add(rs.getString("tempInfo"));
+                HistoryElement historyElement = new HistoryElement(rs.getString("cityName"),rs.getString("tempInfo"));
+                historyArray.add(historyElement);
             }
         }
         catch(Exception e){
             System.out.println("Виникли проблеми із читанням данних з бази данних!");
-
-            return null;
         }
 
-        return array;
+        return historyArray;
+    }
+
+    public void clear() {
+        try{
+            connection = DriverManager.getConnection(url);
+            connection.createStatement().executeUpdate("DROP TABLE IF EXISTS weatherTable");
+        }
+        catch(Exception e){
+            System.out.println("Помилка з очищенням бази данних!");
+        }
     }
 }
