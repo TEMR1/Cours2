@@ -60,12 +60,6 @@ public class Module extends TelegramLongPollingBot {
                         }
                         sendMessage.setChatId(chatId);
                         sendMessage.setText(stringBuilder.toString());
-
-                        try {
-                            execute(sendMessage);
-                        } catch (TelegramApiException e) {
-                            System.out.println("Помилка в надсиланні данних!");
-                        }
                     }
                     else{
                         sendMessage.setChatId(chatId);
