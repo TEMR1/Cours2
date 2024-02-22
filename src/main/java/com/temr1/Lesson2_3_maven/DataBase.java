@@ -4,12 +4,14 @@ import java.sql.*;
 import java.util.ArrayList;
 
 public class DataBase {
-    String url = "jdbc:postgresql://ep-purple-brook-a2aamnh8.eu-central-1.aws.neon.tech/Weather%20Info?user=danylo.shpak.2009&password=HAiU5RrDXIf4&sslmode=require";
+    String url = "jdbc:postgresql://localhost:5433/weatherInfo";
+    String userName = "Danylo";
+    String password = "Danylo2009";
     Connection connection;
 
     public void saveToDataBase(String cityName, String tempInfo){
         try{
-            connection = DriverManager.getConnection(url);
+            connection = DriverManager.getConnection(url, userName, password);
             connection.createStatement().executeUpdate("CREATE TABLE IF NOT EXISTS weatherTable (id SERIAL PRIMARY KEY, cityName TEXT, tempInfo TEXT)");
 
             PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO weatherTable (cityName, tempInfo) VALUES (?, ?)");
@@ -25,7 +27,7 @@ public class DataBase {
     public ArrayList<HistoryElement> readFromDataBase(){
         ArrayList<HistoryElement> historyArray = new ArrayList<>();
         try{
-            connection = DriverManager.getConnection(url);
+            connection = DriverManager.getConnection(url, userName, password);
             ResultSet rs = connection.createStatement().executeQuery("SELECT * FROM weatherTable");
 
             while (rs.next()){
@@ -42,7 +44,7 @@ public class DataBase {
 
     public void clear() {
         try{
-            connection = DriverManager.getConnection(url);
+            connection = DriverManager.getConnection(url, userName, password);
             connection.createStatement().executeUpdate("DROP TABLE IF EXISTS weatherTable");
         }
         catch(Exception e){
